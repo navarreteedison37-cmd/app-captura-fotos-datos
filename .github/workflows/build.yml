@@ -24,26 +24,28 @@ jobs:
       - name: Instalar dependencias
         run: |
           cd mobile-app
-          npm install
+          npm install --legacy-peer-deps
 
-      - name: Corregir compatibilidad en todas las librerías
+      - name: Corregir compatibilidad en todas las librerías (classifier)
         run: |
           find mobile-app/node_modules/ -name "build.gradle" -exec sed -i 's/classifier =/archiveClassifier =/g' {} +
 
       - name: Generar proyecto Android
         run: |
           cd mobile-app
-          npx expo prebuild --platform android
+          npx expo prebuild --platform android --no-install
 
-      - name: Configurar SDK en proyecto Android
+      - name: Configurar SDK en Gradle
         run: |
           echo -e "\next {\n    compileSdkVersion = 33\n    targetSdkVersion = 33\n    minSdkVersion = 21\n    buildToolsVersion = \"33.0.0\"\n}\n" >> mobile-app/android/build.gradle
 
       - name: Compilar APK con Gradle
+        env:
+          NODE_OPTIONS: "--max-old-space-size=4096"
         run: |
           cd mobile-app/android
           chmod +x gradlew
-          ./gradlew assembleRelease --no-daemon
+          ./gradlew assembleRelease --no-daemon -Dorg.gradle.jvmargs="-Xmx4096m -XX:MaxMetaspaceSize=1024m"
 
       - name: Guardar APK generado
         uses: actions/upload-artifact@v4
