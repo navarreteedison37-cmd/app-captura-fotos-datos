@@ -26,14 +26,18 @@ jobs:
           cd mobile-app
           npm install
 
-      - name: Corregir compatibilidad de expo-camera
+      - name: Corregir compatibilidad en todas las librerías
         run: |
-          sed -i 's/classifier =/archiveClassifier =/g' mobile-app/node_modules/expo-camera/android/build.gradle
+          find mobile-app/node_modules/ -name "build.gradle" -exec sed -i 's/classifier =/archiveClassifier =/g' {} +
 
       - name: Generar proyecto Android
         run: |
           cd mobile-app
           npx expo prebuild --platform android
+
+      - name: Configurar SDK en proyecto Android
+        run: |
+          echo -e "\next {\n    compileSdkVersion = 33\n    targetSdkVersion = 33\n    minSdkVersion = 21\n    buildToolsVersion = \"33.0.0\"\n}\n" >> mobile-app/android/build.gradle
 
       - name: Compilar APK con Gradle
         run: |
