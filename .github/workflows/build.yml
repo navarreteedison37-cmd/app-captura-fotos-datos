@@ -26,6 +26,10 @@ jobs:
           cd mobile-app
           npm install
 
+      - name: Corregir compatibilidad de expo-camera
+        run: |
+          sed -i 's/classifier =/archiveClassifier =/g' mobile-app/node_modules/expo-camera/android/build.gradle
+
       - name: Generar proyecto Android
         run: |
           cd mobile-app
