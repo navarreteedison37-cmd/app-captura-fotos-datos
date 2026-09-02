@@ -1,0 +1,44 @@
+name: Generar APK Android
+
+on:
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Descargar código
+        uses: actions/checkout@v4
+
+      - name: Configurar Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 18
+
+      - name: Configurar Java 17
+        uses: actions/setup-java@v4
+        with:
+          distribution: 'zulu'
+          java-version: '17'
+
+      - name: Instalar dependencias
+        run: |
+          cd mobile-app
+          npm install
+
+      - name: Generar proyecto Android
+        run: |
+          cd mobile-app
+          npx expo prebuild --platform android
+
+      - name: Compilar APK con Gradle
+        run: |
+          cd mobile-app/android
+          chmod +x gradlew
+          ./gradlew assembleRelease --no-daemon
+
+      - name: Guardar APK generado
+        uses: actions/upload-artifact@v4
+        with:
+          name: App-APK-Instalador
+          path: mobile-app/android/app/build/outputs/apk/release/*.apk
